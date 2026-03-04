@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>اختبار PLC — 50 سؤال (متقدم)</title>
+
+  <style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7fb; color: #111; }
+    .wrap { max-width: 980px; margin: 24px auto; padding: 16px; }
+
+    /* نفس ستايل صفحتك الأساسية */
+    .card { background: #fcf7fae0; border-radius: 16px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.06); }
+
+    h1 { margin: 0 0 8px; font-size: 22px; }
+    .sub { color: #555; margin-bottom: 14px; }
+    .topbar { display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin-bottom: 14px; }
+
+    /* نفس لون الشارة */
+    .pill { background:#fdcef6; color:#1f2a7a; padding:8px 12px; border-radius:999px; font-size:14px; }
+
+    .btns { display:flex; gap:10px; flex-wrap:wrap; }
+    button{
+      border:0; border-radius:12px; padding:10px 14px; cursor:pointer;
+      font-weight:700; font-size:14px;
+      box-shadow:0 8px 18px rgba(0,0,0,.06);
+    }
+    .primary { background:#111; color:#fff; }
+    .ghost { background:#fff; color:#111; border:1px solid #ddd; box-shadow:none; }
+
+    /* نفس لون زر إعادة المحاولة */
+    .danger { background:#9f0087; color:#fff; }
+
+    .q { border:1px solid #eee; border-radius:14px; padding:14px; margin:12px 0; background:#fff; }
+    .qhead { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .qnum { font-weight:900; color:#333; }
+    .qtext { font-weight:800; margin:0 0 10px; }
+    .opts { display:grid; gap:8px; }
+    label.opt{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px; border-radius:12px; border:1px solid #e7e7e7; cursor:pointer;
+      background:#fff;
+    }
+    label.opt:hover { background:#fafafa; }
+    input[type="radio"] { margin-top:3px; }
+    .muted { color:#666; font-size:13px; }
+
+    .result{
+      margin-top:14px; padding:14px; border-radius:14px; border:1px solid #e7e7e7;
+      background:#fbfbff;
+    }
+    .score { font-size:22px; font-weight:900; margin:0 0 6px; }
+    .wronglist{ margin:10px 0 0; padding:0; list-style:none; display:grid; gap:10px; }
+    .wrongitem{ background:#fff; border:1px solid #eee; border-radius:12px; padding:12px; }
+    .ok{ color:#0b6b2d; font-weight:800; }
+    .bad{ color:#b00020; font-weight:800; }
+    .footer{ margin-top:12px; color:#666; font-size:12px; }
+
+    /* إضافات مفيدة */
+    code.block{
+      display:block; white-space:pre-wrap; direction:ltr; text-align:left;
+      background:#0f172a; color:#e2e8f0; padding:10px 12px; border-radius:12px;
+      font-size:12px; margin:8px 0 0;
+    }
+    a.back { text-decoration:none; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>اختبار PLC المتقدم</h1>
+      <div class="sub">50 سؤال أصعب (عملي + مؤقتات/عدادات + Steps). الأسئلة والخيارات تتخلط تلقائيًا.</div>
+
+      <div class="topbar">
+        <div class="pill" id="meta">عدد الأسئلة: 50</div>
+        <div class="btns">
+          <button class="primary" id="submitBtn">إنهاء الاختبار وإظهار النتيجة</button>
+          <button class="ghost" id="shuffleBtn">إعادة خلط الأسئلة</button>
+          <button class="danger" id="resetBtn">إعادة المحاولة</button>
+          <a class="back" href="index.html"><button class="ghost" type="button">رجوع لاختبار 100</button></a>
+        </div>
+      </div>
+
+      <div class="muted" id="note"></div>
+      <div id="quiz"></div>
+      <div id="result" class="result" style="display:none;"></div>
+
+      <div style=" padding-right:20px; border-radius:5px; padding:10px;" class="footer">
+      
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ========= أدوات صغيرة ========= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+/* ========= بنك الأسئلة (50) ========= */
+const QUESTION_BANK = [
+  // Steps (1-12)
+  {a:"في PLC دلتا غالباً تعليمة OUT تستهلك:", o:["1 Step","2 Steps","4 Steps","5 Steps"], c:0},
+  {a:"تعليمات المقارنة (مثل LD< / LD= / LD>) غالباً تستهلك:", o:["1 Step","2 Steps","4 Steps","10 Steps"], c:2},
+  {a:"إذا كان لدينا (LD< ثم OUT) فالمجموع التقريبي للـ Steps هو:", o:["2","3","5","9"], c:2},
+  {a:"تعليمة MOV تستهلك تقريباً:", o:["1 Step","3 Steps","5 Steps","9 Steps"], c:2},
+  {a:"تعليمة DMOV تستهلك تقريباً:", o:["1 Step","5 Steps","9 Steps","12 Steps"], c:2},
+  {a:"إذا كان برنامج يحتوي: 3 مقارنات (LD<, LD=, LD>) وكل واحدة بعدها OUT، فكم مجموع Steps تقريباً؟", o:["6","9","15","18"], c:3},
+  {a:"تعليمة END عادة تستهلك:", o:["0 Steps","1 Step","4 Steps","حسب عدد المخارج"], c:1},
+  {a:"أهم سبب لتقليل Steps في البرنامج هو:", o:["تقليل زمن التنفيذ (Scan) واستهلاك الذاكرة","زيادة الجهد","زيادة IP","زيادة عدد المخارج"], c:0},
+  {a:"إذا زاد عدد Steps كثيراً في برنامج PLC، أكثر شيء قد يتأثر:", o:["شكل الأسلاك","زمن الاستجابة (Scan time)","لون HMI","عدد حساسات الحرارة"], c:1},
+  {a:"عند حساب Steps: هل عدد الأسطر في Ladder يساوي عدد Steps؟", o:["نعم دائماً","نعم غالباً","لا، لأن كل تعليمة لها وزن Steps مختلف","لا، لأن PLC لا يستخدم Steps"], c:2},
+  {a:"تعليمة LDP و LDF عادة تستخدم للحصول على:", o:["تماس ثابت","نبضة Scan واحدة عند الحافة","زيادة في PV","إخراج دائم"], c:1},
+  {a:"الخطأ الشائع في أسئلة Steps هو:", o:["الخلط بين الأسطر والخطوات","الخلط بين NO و NC","الخلط بين RS232 و RS485","الخلط بين AC و DC"], c:0},
+
+  // عملي Ladder/منطق (13-30)
+  {a:"لعمل Self-hold في PLC بدلاً من 13-14 نستخدم غالباً:", o:["OUT فقط بدون تفرع","خرج Y على تفرع مع زر Start","RST للخرج","تبديل RS485"], c:1},
+  {a:"زر Stop في دوائر التحكم يجب أن يكون:", o:["NO","NC","تشابهي","غير مهم"], c:1},
+  {a:"في مؤقت ON-Delay: تماس المؤقت ينتقل إلى ON:", o:["فور تفعيل الدخل","بعد وصول المؤقت للقيمة المضبوطة","بعد فصل الدخل","لا ينتقل أبداً"], c:1},
+  {a:"Timer يزداد بالزمن عند:", o:["تغير الإشارة فقط","استمرار الإشارة ON","انقطاع الإشارة","تغير الجهد فقط"], c:1},
+  {a:"Counter يزداد عادة عند:", o:["استمرار الإشارة ON","نبضة/حافة صاعدة","حافة هابطة فقط","الزمن"], c:1},
+  {a:"الفرق الأساسي بين Latched و Non-latched Timer هو:", o:["عدد المؤقتات","سرعة التنفيذ","حفظ القيمة عند انقطاع الإشارة","نوع الكابل"], c:2},
+  {a:"أي تعليمة تُستخدم لتثبيت خرج بشكل قفلي (Latch)؟", o:["SET","RST","LDI","OR"], c:0},
+  {a:"وأي تعليمة تُستخدم لفك القفل؟", o:["SET","RST","MOV","INV"], c:1},
+  {a:"في مثال خزان الماء بحساسين علوي وسفلي: الهدف من حساسين هو:", o:["زيادة الاستهلاك","منع التشغيل/الفصل المتكرر (Hysteresis)","تسريع PLC","زيادة Steps"], c:1},
+  {a:"عند انخفاض الماء تحت الحساس السفلي، ماذا يجب أن يحدث غالباً؟", o:["تشغيل المضخة","إيقاف المضخة","تصفير البرنامج","تشغيل EV"], c:0},
+  {a:"عند وصول الماء للحساس العلوي، ماذا يحدث غالباً؟", o:["تشغيل المضخة","إيقاف المضخة","زيادة العداد","تشغيل المؤقت"], c:1},
+  {a:"استخدام LDF يفيد عندما تريد:", o:["نبضة عند الحافة الصاعدة","نبضة عند الحافة الهابطة","تشغيل خرج دائم","نقل قيمة لمسجل"], c:1},
+  {a:"إذا أردت تشغيل خرج فقط عند أول ضغطة Start (بدون تكرار أثناء الضغط)، تستخدم:", o:["LD فقط","LDP","MOV","TMR"], c:1},
+  {a:"إذا كان عندك Start NO و Stop NC والخرج Y0، أي المنطق صحيح؟", o:["Y0 = Start فقط","Y0 = Stop فقط","Y0 = (Start OR Y0) AND Stop","Y0 = (Start AND Y0) OR Stop"], c:2},
+  {a:"في العدادات: عندما يصل العداد للقيمة Kx يصبح تماس العداد:", o:["OFF","ON","يتذبذب","لا يتغير"], c:1},
+  {a:"في DCNT تحديد اتجاه العد غالباً يتم عبر:", o:["قيمة K","تماس مساعد/Marker مخصص (مثل M1200)","نوع السلك","END"], c:1},
+  {a:"إذا بقي دخل العداد ON دون نبضات جديدة:", o:["يزيد باستمرار","لا يزيد","يصفر","يصير مؤقت"], c:1},
+
+  // عملي بيانات ومقارنات (31-42)
+  {a:"مسجل D يخزن عادة:", o:["Bit واحد","Byte واحد","Word 16-bit","زمن 1s"], c:2},
+  {a:"DMOV ينقل:", o:["Bit","Byte","Word واحد","Double Word (مسجلين)"], c:3},
+  {a:"XCH تعني:", o:["نسخ قيمة","تبديل محتوى مصدر ووجهة","طرح","قسمة"], c:1},
+  {a:"LD<> تعني:", o:["يساوي","لا يساوي","أكبر من","أصغر من"], c:1},
+  {a:"إذا أردت مقارنة Double Word تستخدم غالباً:", o:["LD=","DLD","MOV","OUT"], c:1},
+  {a:"في مثال: إذا D200 > K-30 و X1 ON، خرج Y11 غالباً:", o:["يصبح ON/يبقى ON حسب المنطق","يصفر دائماً","لا يتأثر","يتحول لمؤقت"], c:0},
+  {a:"في الإنفرتر: التحكم بالسرعة يتم أساساً عبر:", o:["تغيير الجهد فقط","تغيير التردد مع الجهد (V/f)","تغيير IP","تغيير Steps"], c:1},
+  {a:"في RS485 سبب إضافة مقاومة طرفية:", o:["زيادة الضجيج","منع ارتداد الإشارة (Reflection)","زيادة عدد الأسئلة","تغيير PV"], c:1},
+  {a:"Modbus Function 03 تعني:", o:["Read Coils","Read Holding Registers","Write Single Register","Read Discrete Inputs"], c:1},
+  {a:"في ASCII التحقق من الخطأ يتم غالباً بـ:", o:["CRC","LRC","Parity فقط","لا يوجد"], c:1},
+  {a:"في RTU التحقق من الخطأ يتم غالباً بـ:", o:["LRC","CRC","Sum","لا يوجد"], c:1},
+  {a:"عناوين Slave في Modbus تكون غالباً ضمن:", o:["1-127","1-247","0-255","0-100"], c:1},
+
+  // مسائل صغيرة (43-50)
+  {a:"إذا كانت قاعدة المؤقت 100ms وكتبنا TMR T0 K37 فإن الزمن الحقيقي هو:", o:["0.37s","3.7s","37s","370s"], c:1},
+  {a:"إذا كانت القاعدة 10ms وكتبنا K150 فإن الزمن الحقيقي هو:", o:["0.15s","1.5s","15s","150s"], c:1},
+  {a:"في Self-hold: لماذا لا نضع Start وحده بدون فرع Y0؟", o:["لأنه يعمل لحظياً فقط أثناء الضغط","لأنه يزيد Steps","لأنه يغير IP","لأنه يمنع عمل Stop"], c:0},
+  {a:"أفضل تعريف لـ PV في المؤقت:", o:["القيمة الحالية","القيمة المضبوطة","عدد المخارج","نوع الكابل"], c:0},
+  {a:"أفضل تعريف لـ RV/SV في المؤقت:", o:["القيمة الحالية","القيمة المضبوطة (Preset)","سرعة المسح","عنوان المداخل"], c:1},
+  {a:"عند استخدام LDP على زر Start: الخرج يتفعّل:", o:["طوال مدة الضغط","Scan واحدة فقط عند أول ضغط","Scan واحدة عند ترك الزر","لا يعمل"], c:1},
+  {a:"في Ladder: AND يمثل عادة:", o:["تفرع (Parallel)","تسلسل (Series)","تصفير","نقل"], c:1},
+  {a:"في Ladder: OR يمثل عادة:", o:["تسلسل","تفرع","عكس","إخراج"], c:1}
+];
+
+// ضمان العدد = 50
+if (QUESTION_BANK.length !== 50) {
+  console.warn("عدد الأسئلة الحالي =", QUESTION_BANK.length, "وليس 50.");
+}
+
+/* ========= توليد نسخة أسئلة مع خلط الخيارات ========= */
+let questions = [];
+function buildQuiz(){
+  const base = shuffle(QUESTION_BANK);
+  questions = base.map((q, idx) => {
+    const opts = q.o.map((t, i) => ({t, i}));
+    const mixed = shuffle(opts);
+    const newC = mixed.findIndex(x => x.i === q.c);
+    return { id: idx, a: q.a, o: mixed.map(x => x.t), c: newC };
+  });
+}
+
+/* ========= رسم الاختبار ========= */
+const quizEl = document.getElementById("quiz");
+const resultEl = document.getElementById("result");
+const noteEl = document.getElementById("note");
+
+function render(){
+  resultEl.style.display = "none";
+  resultEl.innerHTML = "";
+  quizEl.innerHTML = "";
+  noteEl.textContent = "تنبيه: الأسئلة أصعب، ركّز على المنطق والـ Steps.";
+
+  questions.forEach((q, i) => {
+    const box = document.createElement("div");
+    box.className = "q";
+    box.innerHTML = `
+      <div class="qhead">
+        <div class="qnum">سؤال ${i+1}</div>
+        <div class="muted">اختر إجابة واحدة</div>
+      </div>
+      <p class="qtext">${escapeHtml(q.a)}</p>
+      <div class="opts">
+        ${q.o.map((opt, j) => `
+          <label class="opt">
+            <input type="radio" name="q${i}" value="${j}" />
+            <span>${escapeHtml(opt)}</span>
+          </label>
+        `).join("")}
+      </div>
+    `;
+    quizEl.appendChild(box);
+  });
+
+  document.getElementById("meta").textContent = `عدد الأسئلة: ${questions.length}`;
+}
+
+/* ========= التصحيح ========= */
+function grade(){
+  let score = 0;
+  const wrong = [];
+
+  for(let i=0;i<questions.length;i++){
+    const picked = document.querySelector(`input[name="q${i}"]:checked`);
+    const val = picked ? Number(picked.value) : null;
+
+    if (val === questions[i].c) score++;
+    else {
+      wrong.push({
+        n: i+1,
+        q: questions[i].a,
+        your: val === null ? "— لم يتم الاختيار —" : questions[i].o[val],
+        correct: questions[i].o[questions[i].c]
+      });
+    }
+  }
+
+  const percent = Math.round((score / questions.length) * 100);
+
+  resultEl.style.display = "block";
+  resultEl.innerHTML = `
+    <p class="score">نتيجتك: ${score} / ${questions.length} (${percent}%)</p>
+    <p class="${wrong.length ? "bad":"ok"}">
+      ${wrong.length ? `عندك ${wrong.length} خطأ.` : "ممتاز! كل الإجابات صحيحة."}
+    </p>
+    ${wrong.length ? `
+      <ul class="wronglist">
+        ${wrong.map(w => `
+          <li class="wrongitem">
+            <div><b>سؤال ${w.n}:</b> ${escapeHtml(w.q)}</div>
+            <div class="bad">إجابتك: ${escapeHtml(w.your)}</div>
+            <div class="ok">الصحيح: ${escapeHtml(w.correct)}</div>
+          </li>
+        `).join("")}
+      </ul>
+    ` : ""}
+  `;
+
+  resultEl.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+/* ========= أزرار التحكم ========= */
+document.getElementById("submitBtn").addEventListener("click", grade);
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+  resultEl.style.display = "none";
+  resultEl.innerHTML = "";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+
+document.getElementById("shuffleBtn").addEventListener("click", () => {
+  buildQuiz();
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+
+/* ========= تشغيل ========= */
+buildQuiz();
+render();
+</script>
+</body>
+</html>
